@@ -305,4 +305,33 @@ references:
     issued:
       year: 2025
     URL: https://arxiv.org/abs/2511.02979
+
+  - id: gemma3modelcard
+    type: webpage
+    author:
+      - family: Google AI
+    title: "Gemma 3 Model Card"
+    URL: https://ai.google.dev/gemma/docs/core/model_card_3
+    issued:
+      year: 2025
+
+  - id: gemma3techreport
+    type: article-journal
+    author:
+      - family: Gemma Team
+      - family: Google DeepMind
+    title: "Gemma 3 Technical Report"
+    container-title: arXiv preprint
+    issued:
+      year: 2025
+    URL: https://arxiv.org/abs/2503.19786
+
+  - id: willitrunai2026
+    type: webpage
+    author:
+      - family: Will It Run AI
+    title: "Gemma 3 VRAM Requirements — 1B, 4B, 12B, 27B GPU & Mac Guide"
+    URL: https://willitrunai.com/blog/gemma-3-local-inference-guide
+    issued:
+      year: 2026
 ...

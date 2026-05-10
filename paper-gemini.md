@@ -6,12 +6,10 @@ author:
     email: amirhafizi443@gmail.com
     student-id: 2024745815
 abstract: |
-  The rapid advancement of large language models (LLMs) has catalyzed a new class of AI systems capable of simulating human-like companionship, personality, and task-oriented assistance. We present B.A.D.D.I.E. (Behavioural Architectures for Digitally-Defined Independent Entities), a fully local desktop AI companion system that integrates multimodal perception, retrieval-augmented generation (RAG), real-time voice interaction, and an animated Live2D avatar within a unified behavioural architecture. Unlike cloud-dependent assistants, B.A.D.D.I.E. operates entirely on consumer hardware using the open-weight Gemma 3 4B model, prioritizing user privacy while delivering a persistent, personality-consistent companion experience. We describe the system's layered architecture, its personality modelling pipeline, the voice interaction stack combining OpenAI Whisper with local neural TTS, and the RAG-based long-term memory system. We further discuss the design rationale behind selecting Gemma 3 4B as the local reasoning backbone and present a working prototype. This work contributes a practical blueprint for building privacy-preserving, personality-rich AI companions and opens discussion on the behavioural, ethical, and technical dimensions of digitally-defined independent entities.
+  The rapid advancement of large language models (LLMs) has catalyzed a new class of AI systems capable of simulating human-like companionship, personality, and task-oriented assistance. We present B.A.D.D.I.E. (Behavioural Architectures for Digitally-Defined Independent Entities), a local-first desktop AI companion system that integrates multimodal perception, retrieval-augmented generation (RAG), real-time voice interaction, and an animated Live2D avatar within a unified behavioural architecture. Unlike cloud-dependent assistants, B.A.D.D.I.E. operates entirely on consumer hardware, prioritizing user privacy while delivering a persistent, personality-consistent companion experience. We describe the system's layered architecture, its personality modelling pipeline, the voice interaction stack combining OpenAI Whisper with local neural TTS, and the RAG-based long-term memory system. We further discuss the design rationale behind selecting Gemini 3.1 Flash Lite as the reasoning backbone and present a working prototype. This work contributes a practical blueprint for building privacy-preserving, personality-rich AI companions and opens discussion on the behavioural, ethical, and technical dimensions of digitally-defined independent entities.
 keywords:
   - AI companion
   - large language models
-  - Gemma 3
-  - local inference
   - personality modelling
   - retrieval-augmented generation
   - local-first computing
@@ -27,7 +25,7 @@ csl: acm.csl
 
 The concept of artificial companions has evolved dramatically from early chatbots like ELIZA [@weizenbaum1966eliza] to modern large language model (LLM)-based agents capable of sustained, contextually rich dialogue. Recent advances have produced systems that can simulate empathy, maintain persona consistency across sessions, and even form parasocial relationships with users [@chen2024tmlr-persona; @tissaoui2026prompt]. Yet the dominant paradigm remains cloud-centric: user data flows to remote servers, personalities are stateless between sessions, and the user has little control over the behavioural parameters of their digital companion.
 
-B.A.D.D.I.E. represents a fundamentally different approach. It is a *fully local* AI companion designed to run entirely on consumer hardware, combining:
+B.A.D.D.I.E. represents a fundamentally different approach. It is a *local-first* AI companion designed to run entirely on consumer hardware, combining:
 
 - A persistent, configurable personality engine grounded in established psychological trait models
 - Retrieval-augmented generation (RAG) for long-term conversational memory
@@ -40,11 +38,10 @@ The name — Behavioural Architectures for Digitally-Defined Independent Entitie
 
 This paper makes the following contributions:
 
-1. A comprehensive architectural blueprint for fully local AI companion systems
+1. A comprehensive architectural blueprint for local-first AI companion systems
 2. A personality modelling pipeline that maintains behavioural consistency using typed memory systems
 3. An integrated voice interaction stack optimized for low-latency, fully-offline operation
-4. A design rationale for selecting Gemma 3 4B as a local-first reasoning backbone
-5. A discussion of the ethical and behavioural implications of personality-rich AI companions
+4. A discussion of the ethical and behavioural implications of personality-rich AI companions
 
 # Related Work
 
@@ -78,17 +75,13 @@ The Local-AI-Companion project [@liilk-companion] is particularly relevant as it
 
 The embodiment of AI agents through visual avatars has gained traction with projects like Open-LLM-VTuber, which demonstrated real-time Live2D avatar animation driven by LLM emotional output. Live2D Cubism SDK provides the technical foundation for 2D avatar rendering with lip-sync and expression mapping, enabling a visual presence that significantly enhances user engagement and parasocial bonding.
 
-## Open-Weight Models for Local Deployment
-
-The emergence of capable open-weight models has made fully local AI companions feasible. Gemma 3 [@gemma3modelcard; @gemma3techreport], Google's latest open-weight model family, delivers multimodal capabilities (text and image input, text output) with a 128K context window across 4B, 12B, and 27B parameter variants. The 4B instruction-tuned variant achieves competitive performance with Gemma 2 27B while requiring only ~2.2 GB VRAM at Q4_K_M quantization, making it deployable on consumer GPUs with as little as 6 GB VRAM [@willitrunai2026]. This represents a paradigm shift: near-frontier AI companions can now run entirely on user hardware without any cloud dependency.
-
 # System Architecture
 
 ## Design Principles
 
 B.A.D.D.I.E. is guided by five core design principles:
 
-1. **Fully local**: All inference, storage, and processing occurs on the user's hardware. No data leaves the device.
+1. **Local-first**: All inference, storage, and processing occurs on the user's hardware. No data leaves the device.
 2. **Personality persistence**: The companion maintains a consistent, evolving personality across all sessions.
 3. **Modular pipeline**: Each component (vision, voice, memory, avatar) is independently swappable.
 4. **Low-latency interaction**: Voice responses begin within 1–2 seconds of speech end.
@@ -104,35 +97,10 @@ Figure \ref{fig:architecture} presents the system architecture. The desktop appl
 
 The Core Agent is the reasoning backbone of B.A.D.D.I.E., responsible for:
 
-- **LLM inference**: Gemma 3 4B (instruction-tuned) serves as the primary reasoning model, selected for its strong performance-to-size ratio, multimodal capabilities (text and image input), 128K context window, and efficient local inference on consumer hardware. At Q4_K_M quantization, the model requires only ~2.2 GB VRAM, fitting comfortably on GPUs with 6+ GB VRAM while achieving ~90 tokens/second decode speed on an RTX 4060 [@willitrunai2026]. The model supports over 140 languages natively, enabling multilingual companion interactions.
+- **LLM inference**: Gemini 3.1 Flash Lite serves as the primary reasoning model, selected for its ultra-low latency (2.5× faster than Gemini 2.5 Flash), cost efficiency ($0.25/1M input tokens), and multimodal capabilities (text, image, video, audio, PDF inputs with 1M token context window) [@gemini31flashlite].
 - **Personality engine**: A structured system prompt defines the "baddie" persona — a confident, witty, slightly irreverent personality style that has gained significant popularity in internet culture. The personality is parameterized across dimensions of warmth, assertiveness, humour, and emotional intelligence.
 - **Tool routing**: Function calling enables the agent to delegate tasks to specialized modules (web search, file operations, scheduling, code execution).
 - **Memory integration**: The agent queries the RAG system at each turn, injecting relevant episodic, semantic, and procedural memories into the context window.
-
-## Local Inference Design Rationale
-
-Selecting Gemma 3 4B as the reasoning backbone was driven by several critical factors for a local-first AI companion:
-
-**Privacy**: Running inference locally ensures that all conversation data, personality interactions, and user preferences remain on-device. No API calls to external servers are required for the core reasoning pipeline, eliminating the risk of data leakage, third-party data harvesting, or service discontinuation.
-
-**Performance**: Gemma 3 4B achieves a strong balance between capability and resource efficiency. Key specifications include:
-
-| Metric | Value |
-|--------|-------|
-| Parameters | 4B (instruction-tuned) |
-| Context window | 128K tokens |
-| VRAM (Q4_K_M) | ~2.2 GB |
-| VRAM (Q8_0) | ~4.2 GB |
-| Decode speed (RTX 4060) | ~90 tok/s |
-| Decode speed (RTX 4090) | ~130 tok/s |
-| Multilingual support | 140+ languages |
-| Modalities | Text + Image input, Text output |
-
-**Architecture efficiency**: Gemma 3 employs a 5:1 ratio of local-to-global attention layers with a sliding window of 1024 tokens for local layers. This design reduces KV-cache memory overhead from ~60% (global-only) to less than 15%, enabling longer conversations within limited VRAM. The RoPE base frequency for global layers is increased from 10K to 1M, supporting the full 128K context window.
-
-**Quantization support**: Gemma 3 provides official quantized variants (Int4, SFP8) via Quantization Aware Training (QAT), ensuring minimal quality degradation at lower precision. This allows the model to run on a wide range of consumer hardware, from laptops with integrated graphics to high-end desktop GPUs.
-
-**Open weights**: As an open-weight model, Gemma 3 allows full inspection, modification, and fine-tuning. The companion's personality can be further refined through fine-tuning on user-specific interaction data, enabling deeper personalization without relying on external services.
 
 ## Personality Modelling Pipeline
 
@@ -169,7 +137,7 @@ Figure \ref{fig:voice} shows the voice interaction sequence. The voice pipeline 
 ![Voice interaction sequence: User → VAD → Whisper STT → LLM → TTS/Avatar with streaming overlap.\label{fig:voice}](figures/voice-pipeline.png){width=80%}
 
 1. **Speech-to-Text**: OpenAI Whisper (via faster-whisper) transcribes user speech with voice activity detection (VAD) for automatic endpointing. The "turbo" model size provides the best accuracy-latency tradeoff (~200ms on GPU).
-2. **LLM Processing**: The transcribed text is sent to Gemma 3 4B with the personality-conditioned system prompt and retrieved memories.
+2. **LLM Processing**: The transcribed text is sent to Gemini 3.1 Flash Lite with the personality-conditioned system prompt and retrieved memories.
 3. **Text-to-Speech**: A local neural TTS engine (Piper or Kokoro) synthesizes the response. Kokoro is preferred for quality (natural-sounding, multiple voices), while Piper is available for lower-latency requirements.
 4. **Streaming**: LLM output tokens are streamed and buffered into sentences, with TTS synthesis beginning on the first complete sentence — reducing perceived latency by overlapping generation and synthesis.
 
@@ -179,7 +147,7 @@ The target end-to-end latency from user speech end to first audio output is 1.0�
 
 The vision module provides environmental awareness through:
 
-- **Screen capture analysis**: Periodic or on-demand screen capture with Gemma 3 4B's multimodal inference for contextual awareness of the user's current activity.
+- **Screen capture analysis**: Periodic or on-demand screen capture with Gemini multimodal inference for contextual awareness of the user's current activity.
 - **Camera input**: Optional webcam feed for facial expression recognition and gesture detection, enabling the companion to respond to non-verbal cues.
 
 Vision processing is intentionally lightweight to preserve GPU resources for the primary LLM inference pipeline.
@@ -202,7 +170,7 @@ The avatar renderer runs in the application's WebView using WebGL, communicating
 |-----------|-----------|
 | Desktop shell | Tauri 2.0 (Rust + WebView) |
 | Frontend | Svelte 5 + TypeScript |
-| LLM | Gemma 3 4B (local, via Ollama/llama.cpp) |
+| LLM | Gemini 3.1 Flash Lite (API) |
 | STT | faster-whisper (local) |
 | TTS | Piper / Kokoro (local) |
 | VAD | Silero VAD |
@@ -212,9 +180,9 @@ The avatar renderer runs in the application's WebView using WebGL, communicating
 
 ## Local-First Considerations
 
-B.A.D.D.I.E. is designed from the ground up as a fully local system. Every component — LLM inference, STT, TTS, RAG, avatar rendering, and memory storage — operates entirely on the user's hardware. This eliminates all dependency on cloud services and ensures complete data sovereignty.
+While the LLM inference uses the Gemini API (requiring internet connectivity), all other components — STT, TTS, RAG, avatar rendering, and memory storage — operate entirely locally. For fully offline operation, the LLM layer can be swapped to a local model (e.g., via Ollama) without modifying the rest of the architecture.
 
-The system can be deployed via Ollama (`ollama run gemma3:4b`) or directly through llama.cpp with GGUF quantized models. All user data, conversation history, and memory stores remain on the local filesystem. No telemetry or analytics are collected.
+All user data, conversation history, and memory stores remain on the local filesystem. No telemetry or analytics are collected.
 
 # Discussion
 
@@ -226,32 +194,31 @@ However, the INTIMA benchmark findings [@arxiv2508.09998] caution that companion
 
 ## Privacy and Ethics
 
-The fully local architecture is an ethical design decision. By keeping all data on-device and running inference locally, B.A.D.D.I.E. eliminates the privacy risks inherent in cloud-based companions, where intimate conversations may be stored on third-party servers, used for model training, or exposed in data breaches. No API keys, no network calls for inference, no data leaves the machine.
+The local-first architecture is an ethical design decision. By keeping all data on-device, B.A.D.D.I.E. eliminates the privacy risks inherent in cloud-based companions, where intimate conversations may be stored on third-party servers, used for model training, or exposed in data breaches.
 
 The system also implements:
 
 - **User control**: All personality parameters, memory contents, and behavioural settings are user-accessible and modifiable.
 - **Transparency**: The companion discloses its nature as an AI system and does not attempt to deceive the user about its capabilities or limitations.
 - **Boundary maintenance**: The system is designed to avoid fostering unhealthy dependency, following the ethical guidelines proposed by the INTIMA researchers.
-- **Model ownership**: As an open-weight model, Gemma 3 allows users to inspect, modify, and fine-tune the model that powers their companion.
 
 ## Limitations and Future Work
 
 Current limitations include:
 
-- **Model capability**: Gemma 3 4B, while efficient, has lower absolute capability than frontier models. Future work will evaluate larger local variants (Gemma 3 12B, 27B) as consumer hardware advances.
+- **LLM dependency**: Gemini 3.1 Flash Lite requires internet connectivity. Future work will evaluate local model alternatives (Qwen3, Llama 4) for fully offline operation.
 - **Personality evaluation**: The personality consistency of the "baddie" persona has not been formally evaluated. We plan to adopt the CharacterBench [@arxiv2403.08888] and INTIMA [@arxiv2508.09998] benchmarks for systematic evaluation.
 - **Memory scalability**: Long-term memory management over months and years of interaction remains an open challenge. Hierarchical memory compression strategies [@arxiv2602.02007] will be explored.
-- **Multilingual support**: Gemma 3 4B supports 140+ languages, but the voice pipeline's multilingual TTS quality varies by language. Integration of language-specific TTS models is planned.
+- **Multilingual support**: Current implementation focuses on English. The voice pipeline supports multilingual extension via Whisper and Kokoro's multilingual models.
 
 Future work will also explore multi-agent coordination, where B.A.D.D.I.E. can spawn specialized sub-agents for complex tasks, and integration with smart home systems for environmental control.
 
 # Conclusion
 
-We have presented B.A.D.D.I.E., a fully local AI companion system that integrates personality modelling, long-term memory, multimodal perception, real-time voice interaction, and Live2D avatar embodiment within a unified desktop application. By combining Gemma 3 4B's efficient local reasoning with a typed-memory RAG system and a fully local voice pipeline, B.A.D.D.I.E. delivers a privacy-preserving, personality-rich companion experience on consumer hardware — with zero cloud dependency.
+We have presented B.A.D.D.I.E., a local-first AI companion system that integrates personality modelling, long-term memory, multimodal perception, real-time voice interaction, and Live2D avatar embodiment within a unified desktop application. By combining Gemini 3.1 Flash Lite's reasoning capabilities with a typed-memory RAG system and a fully local voice pipeline, B.A.D.D.I.E. delivers a privacy-preserving, personality-rich companion experience on consumer hardware.
 
 The system contributes a practical architectural blueprint for researchers and developers building AI companions, and opens important discussions about the behavioural, ethical, and technical dimensions of creating digitally-defined independent entities that users can truly call their own.
 
-As open-weight models continue to advance and consumer hardware becomes increasingly capable, systems like B.A.D.D.I.E. represent a future where AI companions are not cloud services we rent, but digital entities we own — persistent, private, and truly personal.
+As LLMs continue to advance and local inference becomes increasingly viable, systems like B.A.D.D.I.E. represent a future where AI companions are not cloud services we rent, but digital entities we own — persistent, private, and truly personal.
 
 # References
